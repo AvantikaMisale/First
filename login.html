@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Login - FinVice{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow">
+                <div class="card-body p-4">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold" data-i18n="Login to FinVice">Login to FinVice</h2>
+                        <p class="text-muted" data-i18n="Access your financial assistant">Access your financial assistant</p>
+                    </div>
+                    
+                    <form method="POST" action="{{ url_for('login') }}">
+                        <div class="mb-3">
+                            <label for="email" class="form-label" data-i18n="Email">Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                                <input type="email" class="form-control" id="email" name="email" placeholder="your@email.com" required autofocus>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="password" class="form-label" data-i18n="Password">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" class="form-control" id="password" name="password" placeholder="••••••••" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="rememberMe" name="remember">
+                            <label class="form-check-label" for="rememberMe" data-i18n="Remember me">Remember me</label>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-box-arrow-in-right"></i> <span data-i18n="Login">Login</span>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="mt-4 text-center">
+                        <p class="mb-0" data-i18n="Don't have an account?">Don't have an account? 
+                            <a href="{{ url_for('register') }}" class="text-decoration-none" data-i18n="Sign up now">Sign up now</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Demo account box -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title" data-i18n="Demo Account">Demo Account</h5>
+                    <p class="card-text" data-i18n="Try out our platform with the demo account:">Try out our platform with the demo account:</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span data-i18n="Email">Email</span>
+                            <code>admin@example.com</code>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span data-i18n="Password">Password</span>
+                            <code>admin123</code>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

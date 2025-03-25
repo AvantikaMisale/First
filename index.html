@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}FinVice - AI-Powered Financial Assistant{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-bg"></div>
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold text-white mb-4" data-i18n="AI-Powered Financial Assistant">AI-Powered Financial Assistant</h1>
+                <p class="lead text-white mb-4" data-i18n="Get real-time market insights, personalized investment recommendations, and portfolio tracking powered by advanced AI.">
+                    Get real-time market insights, personalized investment recommendations, and portfolio tracking powered by advanced AI.
+                </p>
+                {% if current_user.is_authenticated %}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-primary btn-lg px-4 me-md-2">
+                        <i class="bi bi-speedometer2"></i> <span data-i18n="Go to Dashboard">Go to Dashboard</span>
+                    </a>
+                    <button type="button" class="btn btn-outline-light btn-lg px-4" data-bs-toggle="modal" data-bs-target="#chatModal">
+                        <i class="bi bi-chat"></i> <span data-i18n="Chat with Assistant">Chat with Assistant</span>
+                    </button>
+                </div>
+                {% else %}
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                    <a href="{{ url_for('register') }}" class="btn btn-primary btn-lg px-4 me-md-2">
+                        <i class="bi bi-person-plus"></i> <span data-i18n="Sign Up Free">Sign Up Free</span>
+                    </a>
+                    <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg px-4">
+                        <i class="bi bi-box-arrow-in-right"></i> <span data-i18n="Login">Login</span>
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <div class="text-center">
+                    <svg width="500" height="350" viewBox="0 0 500 350" xmlns="http://www.w3.org/2000/svg">
+                        <g fill="none" fill-rule="evenodd">
+                            <circle fill="#e3f2fd" cx="250" cy="175" r="150" opacity="0.5" />
+                            <path d="M100,175 L400,175" stroke="#fff" stroke-width="2" stroke-dasharray="5,5" />
+                            <path d="M130,250 L150,230 L170,240 L210,180 L250,220 L290,150 L330,190 L350,130 L370,150" stroke="#4CAF50" stroke-width="3" fill="none" />
+                            <path d="M130,200 L370,200" stroke="#0d6efd" stroke-width="2" />
+                            <circle cx="210" cy="180" r="5" fill="#4CAF50" />
+                            <circle cx="250" cy="220" r="5" fill="#4CAF50" />
+                            <circle cx="290" cy="150" r="5" fill="#4CAF50" />
+                            <circle cx="330" cy="190" r="5" fill="#4CAF50" />
+                            <circle cx="350" cy="130" r="5" fill="#4CAF50" />
+                            <g transform="translate(360, 80)">
+                                <rect x="0" y="0" width="80" height="40" rx="4" fill="#0d6efd" opacity="0.8" />
+                                <text x="40" y="25" font-family="Arial" font-size="12" fill="#fff" text-anchor="middle">AI Analysis</text>
+                            </g>
+                            <g transform="translate(60, 80)">
+                                <rect x="0" y="0" width="80" height="40" rx="4" fill="#0d6efd" opacity="0.8" />
+                                <text x="40" y="25" font-family="Arial" font-size="12" fill="#fff" text-anchor="middle">Portfolio</text>
+                            </g>
+                        </g>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5">
+    <!-- Key Features -->
+    <div class="text-center mb-5">
+        <h2 class="fw-bold mb-4" data-i18n="Key Features">Key Features</h2>
+        <p class="lead text-muted" data-i18n="Discover how our AI-powered financial assistant can help you make smarter investment decisions.">
+            Discover how our AI-powered financial assistant can help you make smarter investment decisions.
+        </p>
+    </div>
+    
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-primary">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <h5 class="card-title" data-i18n="AI Financial Advice">AI Financial Advice</h5>
+                    <p class="card-text" data-i18n="Get personalized investment recommendations and financial insights powered by advanced AI.">
+                        Get personalized investment recommendations and financial insights powered by advanced AI.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-primary">
+                        <i class="bi bi-graph-up-arrow"></i>
+                    </div>
+                    <h5 class="card-title" data-i18n="Real-time Market Data">Real-time Market Data</h5>
+                    <p class="card-text" data-i18n="Access real-time data for stocks and cryptocurrencies with interactive charts and analysis.">
+                        Access real-time data for stocks and cryptocurrencies with interactive charts and analysis.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-primary">
+                        <i class="bi bi-clipboard-data"></i>
+                    </div>
+                    <h5 class="card-title" data-i18n="Portfolio Tracking">Portfolio Tracking</h5>
+                    <p class="card-text" data-i18n="Track your investments, monitor performance, and get insights to optimize your portfolio.">
+                        Track your investments, monitor performance, and get insights to optimize your portfolio.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-primary">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <h5 class="card-title" data-i18n="Risk Assessment">Risk Assessment</h5>
+                    <p class="card-text" data-i18n="Evaluate investment risks with our AI-powered analysis to make informed decisions.">
+                        Evaluate investment risks with our AI-powered analysis to make informed decisions.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-primary">
+                        <i class="bi bi-chat-dots"></i>
+                    </div>
+                    <h5 class="card-title" data-i18n="Interactive Assistant">Interactive Assistant</h5>
+                    <p class="card-text" data-i18n="Chat with our AI assistant for instant financial advice and answers to your questions.">
+                        Chat with our AI assistant for instant financial advice and answers to your questions.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card feature-card h-100">
+                <div class="card-body text-center">
+                    <div class="feature-icon text-primary">
+                        <i class="bi bi-translate"></i>
+                    </div>
+                    <h5 class="card-title" data-i18n="Multi-language Support">Multi-language Support</h5>
+                    <p class="card-text" data-i18n="Access financial information in your preferred language with support for English and Hindi.">
+                        Access financial information in your preferred language with support for English and Hindi.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- How It Works Section -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold mb-4" data-i18n="How It Works">How It Works</h2>
+            <p class="lead text-muted" data-i18n="Start your financial journey with FinVice in three simple steps.">
+                Start your financial journey with FinVice in three simple steps.
+            </p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body text-center">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <h2 class="mb-0">1</h2>
+                        </div>
+                        <h5 class="card-title" data-i18n="Create an Account">Create an Account</h5>
+                        <p class="card-text" data-i18n="Sign up for a free account to access all features of our financial assistant.">
+                            Sign up for a free account to access all features of our financial assistant.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body text-center">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <h2 class="mb-0">2</h2>
+                        </div>
+                        <h5 class="card-title" data-i18n="Set Up Your Portfolio">Set Up Your Portfolio</h5>
+                        <p class="card-text" data-i18n="Add your investments to track performance and get personalized recommendations.">
+                            Add your investments to track performance and get personalized recommendations.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card border-0 bg-transparent">
+                    <div class="card-body text-center">
+                        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mx-auto mb-4" style="width: 80px; height: 80px;">
+                            <h2 class="mb-0">3</h2>
+                        </div>
+                        <h5 class="card-title" data-i18n="Get AI-Powered Insights">Get AI-Powered Insights</h5>
+                        <p class="card-text" data-i18n="Receive personalized recommendations, risk assessments, and market insights.">
+                            Receive personalized recommendations, risk assessments, and market insights.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Call to Action -->
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card bg-primary text-white">
+                <div class="card-body p-5 text-center">
+                    <h2 class="card-title mb-4" data-i18n="Ready to Transform Your Financial Journey?">Ready to Transform Your Financial Journey?</h2>
+                    <p class="card-text mb-4 lead" data-i18n="Join thousands of investors using our AI-powered assistant to make smarter financial decisions.">
+                        Join thousands of investors using our AI-powered assistant to make smarter financial decisions.
+                    </p>
+                    {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
+                        <i class="bi bi-speedometer2"></i> <span data-i18n="Go to Dashboard">Go to Dashboard</span>
+                    </a>
+                    {% else %}
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
+                        <i class="bi bi-person-plus"></i> <span data-i18n="Create Free Account">Create Free Account</span>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="{{ session.get('language', 'en') }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>{% block title %}FinVice - AI Financial Assistant{% endblock %}</title>
+    
+    <!-- Bootstrap CSS (Replit Dark Theme) -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+    
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="bi bi-graph-up"></i> FinVice
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'dashboard' else '' }}" href="{{ url_for('dashboard') }}">
+                            <i class="bi bi-speedometer2"></i> <span data-i18n="Dashboard">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'market_data' else '' }}" href="{{ url_for('market_data') }}">
+                            <i class="bi bi-graph-up-arrow"></i> <span data-i18n="Market Data">Market Data</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'profile' else '' }}" href="{{ url_for('profile') }}">
+                            <i class="bi bi-person"></i> <span data-i18n="Profile">Profile</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <ul class="navbar-nav">
+                    <!-- Language Selector -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="languageDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-globe"></i> <span id="current-language">English</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" id="language-switcher" aria-labelledby="languageDropdown">
+                            <!-- Languages will be populated by JavaScript -->
+                        </ul>
+                    </li>
+                    
+                    <!-- User Authentication -->
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i> {{ current_user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{{ url_for('profile') }}"><i class="bi bi-person"></i> <span data-i18n="Profile">Profile</span></a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}"><i class="bi bi-box-arrow-right"></i> <span data-i18n="Logout">Logout</span></a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'login' else '' }}" href="{{ url_for('login') }}">
+                            <i class="bi bi-box-arrow-in-right"></i> <span data-i18n="Login">Login</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ 'active' if request.endpoint == 'register' else '' }}" href="{{ url_for('register') }}">
+                            <i class="bi bi-person-plus"></i> <span data-i18n="Register">Register</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Flash Messages -->
+    <div class="container mt-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <div id="alerts-container"></div>
+    </div>
+    
+    <!-- Main Content -->
+    <main class="main-content py-4">
+        {% block content %}{% endblock %}
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4 mt-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="bi bi-graph-up"></i> FinVice</h5>
+                    <p class="text-muted">AI-powered financial assistant providing market insights, personalized investment recommendations, and portfolio tracking.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5 data-i18n="Quick Links">Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{{ url_for('index') }}" class="text-decoration-none"><i class="bi bi-house-door"></i> <span data-i18n="Home">Home</span></a></li>
+                        {% if current_user.is_authenticated %}
+                        <li><a href="{{ url_for('dashboard') }}" class="text-decoration-none"><i class="bi bi-speedometer2"></i> <span data-i18n="Dashboard">Dashboard</span></a></li>
+                        <li><a href="{{ url_for('market_data') }}" class="text-decoration-none"><i class="bi bi-graph-up-arrow"></i> <span data-i18n="Market Data">Market Data</span></a></li>
+                        {% else %}
+                        <li><a href="{{ url_for('login') }}" class="text-decoration-none"><i class="bi bi-box-arrow-in-right"></i> <span data-i18n="Login">Login</span></a></li>
+                        <li><a href="{{ url_for('register') }}" class="text-decoration-none"><i class="bi bi-person-plus"></i> <span data-i18n="Register">Register</span></a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5 data-i18n="Contact">Contact</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-envelope"></i> support@finvice.example.com</li>
+                        <li><i class="bi bi-telephone"></i> +1 (555) 123-4567</li>
+                    </ul>
+                    <div class="mt-3">
+                        <a href="#" class="text-decoration-none me-2"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-decoration-none me-2"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-decoration-none me-2"><i class="bi bi-linkedin"></i></a>
+                        <a href="#" class="text-decoration-none"><i class="bi bi-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-4 mb-3">
+            <div class="row">
+                <div class="col text-center">
+                    <p class="mb-0 text-muted">&copy; 2024 FinVice. All rights reserved.</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    {% if current_user.is_authenticated %}
+    <!-- Chat Modal -->
+    <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="chatModalLabel">
+                        <i class="bi bi-chat-dots"></i> <span data-i18n="AI Financial Assistant">AI Financial Assistant</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0">
+                    <div id="chat-container" class="chat-container">
+                        <div id="chat-messages" class="chat-messages">
+                            <!-- Chat messages will be inserted here by JavaScript -->
+                        </div>
+                        <div class="chat-input-container">
+                            <form id="chat-form">
+                                <div class="input-group">
+                                    <input type="text" id="message-input" class="form-control" placeholder="Ask me anything about finance..." aria-label="Message">
+                                    <button class="btn btn-primary" type="submit">
+                                        <i class="bi bi-send"></i> <span data-i18n="Send">Send</span>
+                                    </button>
+                                </div>
+                            </form>
+                            <div class="suggested-questions-container">
+                                <small class="text-muted" data-i18n="Suggested Questions">Suggested Questions</small>
+                                <div class="mt-1">
+                                    <button type="button" class="btn btn-sm btn-outline-secondary suggested-question" data-i18n="What are the best investment strategies for beginners?">What are the best investment strategies for beginners?</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary suggested-question" data-i18n="How do I diversify my portfolio?">How do I diversify my portfolio?</button>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary suggested-question" data-i18n="Explain the difference between stocks and bonds.">Explain the difference between stocks and bonds.</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Asset Modal -->
+    <div class="modal fade" id="addAssetModal" tabindex="-1" aria-labelledby="addAssetModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addAssetModalLabel">
+                        <i class="bi bi-plus-circle"></i> <span data-i18n="Add Asset">Add Asset</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="add-asset-form">
+                        <input type="hidden" id="portfolio-id" value="{{ portfolio.id if portfolio is defined else '' }}">
+                        
+                        <div class="mb-3">
+                            <label for="asset-search" class="form-label" data-i18n="Search for Asset">Search for Asset</label>
+                            <input type="text" class="form-control" id="asset-search" placeholder="Enter symbol or name">
+                            <div id="asset-search-results" class="mt-2"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="asset-symbol" class="form-label" data-i18n="Symbol">Symbol</label>
+                            <input type="text" class="form-control" id="asset-symbol" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="asset-name" class="form-label" data-i18n="Name">Name</label>
+                            <input type="text" class="form-control" id="asset-name" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="asset-type" class="form-label" data-i18n="Type">Type</label>
+                            <select class="form-select" id="asset-type" required>
+                                <option value="stock" data-i18n="Stock">Stock</option>
+                                <option value="crypto" data-i18n="Cryptocurrency">Cryptocurrency</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="asset-quantity" class="form-label" data-i18n="Quantity">Quantity</label>
+                            <input type="number" class="form-control" id="asset-quantity" min="0.000001" step="0.000001" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="asset-price" class="form-label" data-i18n="Purchase Price">Purchase Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="asset-price" min="0.01" step="0.01" required>
+                                <span class="input-group-text" id="price-spinner">
+                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal" data-i18n="Cancel">Cancel</button>
+                            <button type="submit" class="btn btn-primary" data-i18n="Add Asset">Add Asset</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sell Asset Modal -->
+    <div class="modal fade" id="sellAssetModal" tabindex="-1" aria-labelledby="sellAssetModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sellAssetModalLabel">
+                        <i class="bi bi-currency-exchange"></i> <span data-i18n="Sell Asset">Sell Asset</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="sell-asset-form">
+                        <input type="hidden" id="sell-asset-id">
+                        <input type="hidden" id="sell-asset-symbol">
+                        
+                        <div class="mb-3">
+                            <label class="form-label" data-i18n="Asset">Asset</label>
+                            <div class="form-control bg-light" id="sell-asset-name"></div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="sell-quantity" class="form-label" data-i18n="Quantity to Sell">Quantity to Sell</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="sell-quantity" min="0.000001" step="0.000001" required>
+                                <span class="input-group-text" data-i18n="Max">Max</span>
+                                <span class="input-group-text" id="sell-max-quantity">0</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="sell-price" class="form-label" data-i18n="Sell Price">Sell Price</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="sell-price" min="0.01" step="0.01" required>
+                            </div>
+                            <small class="form-text text-muted">
+                                <span data-i18n="Current Price">Current Price</span>: <span id="sell-current-price">$0.00</span>
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label" data-i18n="Total Value">Total Value</label>
+                            <div class="form-control bg-light" id="sell-total-value">$0.00</div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal" data-i18n="Cancel">Cancel</button>
+                            <button type="submit" class="btn btn-danger" data-i18n="Sell">Sell</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Translations -->
+    <script src="{{ url_for('static', filename='js/translations.js') }}"></script>
+    
+    <!-- Chart Utilities -->
+    <script src="{{ url_for('static', filename='js/chart_utils.js') }}"></script>
+    
+    <!-- Custom JavaScript -->
+    {% if current_user.is_authenticated %}
+    <script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/portfolio.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/market_data.js') }}"></script>
+    {% endif %}
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>

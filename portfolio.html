@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+
+{% block title %}{{ portfolio.name }} - FinVice{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Portfolio Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard') }}" data-i18n="Dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">{{ portfolio.name }}</li>
+                </ol>
+            </nav>
+            <div class="d-flex justify-content-between align-items-center">
+                <h1 class="mb-0">{{ portfolio.name }}</h1>
+                <div>
+                    <button class="btn btn-primary me-2" data-bs-toggle="modal" data-bs-target="#addAssetModal">
+                        <i class="bi bi-plus-circle"></i> <span data-i18n="Add Asset">Add Asset</span>
+                    </button>
+                    <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#chatModal">
+                        <i class="bi bi-chat"></i> <span data-i18n="Get Advice">Get Advice</span>
+                    </button>
+                </div>
+            </div>
+            <p class="text-muted">{{ portfolio.description or '' }}</p>
+        </div>
+    </div>
+    
+    <!-- Hidden data for JavaScript -->
+    <div id="portfolio-data" 
+         data-portfolio-id="{{ portfolio.id }}" 
+         data-portfolio="{{ portfolio|tojson }}" 
+         data-assets="{{ assets|tojson }}" 
+         class="d-none"></div>
+    
+    <!-- Summary and Charts -->
+    <div class="row mb-4">
+        <div class="col-lg-8">
+            <div id="portfolio-summary">
+                <!-- Portfolio summary will be populated by JavaScript -->
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0" data-i18n="Asset Allocation">Asset Allocation</h5>
+                </div>
+                <div class="card-body">
+                    <div id="allocation-chart">
+                        <!-- Allocation chart will be populated by JavaScript -->
+                        <div class="text-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0" data-i18n="AI Analysis">AI Analysis</h5>
+                </div>
+                <div class="card-body">
+                    <p data-i18n="Get personalized insights about your portfolio performance and recommendations.">
+                        Get personalized insights about your portfolio performance and recommendations.
+                    </p>
+                    <div class="d-grid">
+                        <button class="btn btn-primary" id="portfolio-analysis-btn">
+                            <i class="bi bi-magic"></i> <span data-i18n="Analyze Portfolio">Analyze Portfolio</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Assets List -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0" data-i18n="Portfolio Assets">Portfolio Assets</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="assets-list">
+                        <!-- Assets list will be populated by JavaScript -->
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Transaction History -->
+    <div class="row">
+        <div class="col">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0" data-i18n="Transaction History">Transaction History</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div id="transaction-history">
+                        <!-- Transaction history will be populated by JavaScript -->
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Portfolio Analysis Modal -->
+<div class="modal fade" id="portfolioAnalysisModal" tabindex="-1" aria-labelledby="portfolioAnalysisModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="portfolioAnalysisModalLabel">
+                    <i class="bi bi-magic"></i> <span data-i18n="Portfolio Analysis">Portfolio Analysis</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="portfolio-analysis-content">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2" data-i18n="Analyzing your portfolio...">Analyzing your portfolio...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle portfolio analysis button
+        const portfolioAnalysisBtn = document.getElementById('portfolio-analysis-btn');
+        if (portfolioAnalysisBtn) {
+            portfolioAnalysisBtn.addEventListener('click', function() {
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('portfolioAnalysisModal'));
+                modal.show();
+                
+                // Get the portfolio ID
+                const portfolioId = document.getElementById('portfolio-data').dataset.portfolioId;
+                
+                // Get the analysis content element
+                const analysisContent = document.getElementById('portfolio-analysis-content');
+                
+                // Create a message for the AI assistant
+                const message = `Analyze my portfolio with ID ${portfolioId}. Provide insights about diversification, performance, and potential improvements.`;
+                
+                // Send message to AI assistant
+                fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        analysisContent.innerHTML = `
+                            <div class="alert alert-danger">
+                                <h6 data-i18n="Analysis Error">Analysis Error</h6>
+                                <p data-i18n="Failed to analyze portfolio">Failed to analyze portfolio. Please try again later.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Format the response
+                    analysisContent.innerHTML = `
+                        <div class="mb-3">
+                            ${formatMessage(data.response)}
+                        </div>
+                        <div class="text-muted small">
+                            <i class="bi bi-info-circle"></i> <span data-i18n="This is an AI-generated analysis and should not be considered as financial advice.">This is an AI-generated analysis and should not be considered as financial advice.</span>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error analyzing portfolio:', error);
+                    analysisContent.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h6 data-i18n="Analysis Error">Analysis Error</h6>
+                            <p data-i18n="Failed to analyze portfolio">Failed to analyze portfolio. Please try again later.</p>
+                        </div>
+                    `;
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

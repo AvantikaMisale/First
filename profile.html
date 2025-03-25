@@ -1,0 +1,380 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - FinVice{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <!-- Account Information Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0" data-i18n="Account Information">Account Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-4">
+                        <div class="bg-primary rounded-circle text-white d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-person-circle fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0">{{ current_user.username }}</h5>
+                            <p class="text-muted mb-0">{{ current_user.email }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="Username">Username</label>
+                        <input type="text" class="form-control" value="{{ current_user.username }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="Email Address">Email Address</label>
+                        <input type="email" class="form-control" value="{{ current_user.email }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="Language">Language</label>
+                        <select class="form-select" id="profile-language">
+                            <option value="en" {% if current_user.language == 'en' %}selected{% endif %}>English</option>
+                            <option value="hi" {% if current_user.language == 'hi' %}selected{% endif %}>हिंदी (Hindi)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label" data-i18n="Account Created">Account Created</label>
+                        <input type="text" class="form-control" value="{{ current_user.created_at.strftime('%Y-%m-%d') }}" readonly>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="button" class="btn btn-primary" id="update-profile-btn" data-i18n="Update Profile">Update Profile</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Change Password Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0" data-i18n="Change Password">Change Password</h5>
+                </div>
+                <div class="card-body">
+                    <form id="change-password-form">
+                        <div class="mb-3">
+                            <label for="current-password" class="form-label" data-i18n="Current Password">Current Password</label>
+                            <input type="password" class="form-control" id="current-password" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="new-password" class="form-label" data-i18n="New Password">New Password</label>
+                            <input type="password" class="form-control" id="new-password" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="confirm-new-password" class="form-label" data-i18n="Confirm New Password">Confirm New Password</label>
+                            <input type="password" class="form-control" id="confirm-new-password" required>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary" data-i18n="Change Password">Change Password</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <!-- Risk Profile Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0" data-i18n="Risk Profile">Risk Profile</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4" data-i18n="Set your risk tolerance and investment preferences">
+                        Set your risk tolerance and investment preferences to get more personalized investment recommendations.
+                    </p>
+                    
+                    <form id="risk-profile-form">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label" data-i18n="Investment Horizon">Investment Horizon</label>
+                                    <select class="form-select" id="investment-horizon" name="investment_horizon">
+                                        <option value="short" data-i18n="Short-term (< 1 year)">Short-term (< 1 year)</option>
+                                        <option value="medium" data-i18n="Medium-term (1-5 years)">Medium-term (1-5 years)</option>
+                                        <option value="long" data-i18n="Long-term (> 5 years)">Long-term (> 5 years)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label" data-i18n="Income Level">Income Level</label>
+                                    <select class="form-select" id="income-level" name="income_level">
+                                        <option value="low" data-i18n="Low">Low</option>
+                                        <option value="medium" data-i18n="Medium">Medium</option>
+                                        <option value="high" data-i18n="High">High</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label" data-i18n="Risk Tolerance">Risk Tolerance</label>
+                                    <input type="range" class="form-range risk-slider" id="risk-score" name="risk_score" min="1" max="5" step="1" value="3">
+                                    <div class="risk-labels">
+                                        <span data-i18n="Conservative">Conservative</span>
+                                        <span data-i18n="Moderate">Moderate</span>
+                                        <span data-i18n="Aggressive">Aggressive</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label class="form-label" data-i18n="Investment Goals">Investment Goals</label>
+                                    <div class="row g-2">
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="goal-retirement" name="goals" value="retirement">
+                                                <label class="form-check-label" for="goal-retirement" data-i18n="Retirement">Retirement</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="goal-education" name="goals" value="education">
+                                                <label class="form-check-label" for="goal-education" data-i18n="Education">Education</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="goal-wealth" name="goals" value="wealth">
+                                                <label class="form-check-label" for="goal-wealth" data-i18n="Wealth Accumulation">Wealth Accumulation</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="goal-home" name="goals" value="home">
+                                                <label class="form-check-label" for="goal-home" data-i18n="Home Purchase">Home Purchase</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="goal-other" name="goals" value="other">
+                                                <label class="form-check-label" for="goal-other" data-i18n="Other">Other</label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <div class="mb-3">
+                                    <label for="investment-notes" class="form-label" data-i18n="Additional Notes">Additional Notes</label>
+                                    <textarea class="form-control" id="investment-notes" name="investment_goals" rows="3"></textarea>
+                                </div>
+                            </div>
+                            
+                            <div class="col-12">
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary" data-i18n="Save Preferences">Save Preferences</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- AI Recommendation Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0" data-i18n="Personalized Recommendations">Personalized Recommendations</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4" data-i18n="Get investment recommendations based on your risk profile and market analysis.">
+                        Get investment recommendations based on your risk profile and market analysis.
+                    </p>
+                    
+                    <div id="recommendation-container">
+                        <!-- If there's no risk profile yet -->
+                        <div class="text-center py-3">
+                            <i class="bi bi-lightbulb fs-1 text-muted"></i>
+                            <p class="mt-3" data-i18n="Complete your risk profile to get personalized investment recommendations.">
+                                Complete your risk profile to get personalized investment recommendations.
+                            </p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button class="btn btn-primary" id="get-recommendations-btn" data-i18n="Get Recommendations">
+                                Get Recommendations
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recommendations Modal -->
+<div class="modal fade" id="recommendationsModal" tabindex="-1" aria-labelledby="recommendationsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="recommendationsModalLabel">
+                    <i class="bi bi-lightbulb"></i> <span data-i18n="Investment Recommendations">Investment Recommendations</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="recommendations-content">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2" data-i18n="Generating recommendations...">Generating recommendations...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Update language preference
+        const profileLanguage = document.getElementById('profile-language');
+        if (profileLanguage) {
+            profileLanguage.addEventListener('change', function() {
+                const language = this.value;
+                changeLanguage(language);
+            });
+        }
+        
+        // Handle update profile button
+        const updateProfileBtn = document.getElementById('update-profile-btn');
+        if (updateProfileBtn) {
+            updateProfileBtn.addEventListener('click', function() {
+                // In a real application, this would submit the updated profile information
+                showAlert('success', getTranslation('Profile updated successfully'));
+            });
+        }
+        
+        // Handle password change form
+        const changePasswordForm = document.getElementById('change-password-form');
+        if (changePasswordForm) {
+            changePasswordForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const currentPassword = document.getElementById('current-password').value;
+                const newPassword = document.getElementById('new-password').value;
+                const confirmNewPassword = document.getElementById('confirm-new-password').value;
+                
+                // Validate passwords
+                if (!currentPassword || !newPassword || !confirmNewPassword) {
+                    showAlert('danger', getTranslation('Please fill in all password fields'));
+                    return;
+                }
+                
+                if (newPassword !== confirmNewPassword) {
+                    showAlert('danger', getTranslation('New passwords do not match'));
+                    return;
+                }
+                
+                // In a real application, this would submit the password change request
+                showAlert('success', getTranslation('Password changed successfully'));
+                changePasswordForm.reset();
+            });
+        }
+        
+        // Handle risk profile form
+        const riskProfileForm = document.getElementById('risk-profile-form');
+        if (riskProfileForm) {
+            riskProfileForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // In a real application, this would submit the risk profile data
+                showAlert('success', getTranslation('Risk profile saved successfully'));
+            });
+        }
+        
+        // Handle get recommendations button
+        const getRecommendationsBtn = document.getElementById('get-recommendations-btn');
+        if (getRecommendationsBtn) {
+            getRecommendationsBtn.addEventListener('click', function() {
+                // Show the modal
+                const modal = new bootstrap.Modal(document.getElementById('recommendationsModal'));
+                modal.show();
+                
+                // Get the recommendations content element
+                const recommendationsContent = document.getElementById('recommendations-content');
+                
+                // Create a message for the AI assistant
+                const message = "Based on my risk profile, what investment recommendations do you have for me?";
+                
+                // Send message to AI assistant
+                fetch('/api/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        recommendationsContent.innerHTML = `
+                            <div class="alert alert-danger">
+                                <h6 data-i18n="Error">Error</h6>
+                                <p data-i18n="Failed to get recommendations">Failed to get recommendations. Please try again later.</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    // Format the response
+                    recommendationsContent.innerHTML = `
+                        <div class="mb-3">
+                            ${formatMessage(data.response)}
+                        </div>
+                        <div class="text-muted small">
+                            <i class="bi bi-info-circle"></i> <span data-i18n="This is an AI-generated recommendation and should not be considered as financial advice.">This is an AI-generated recommendation and should not be considered as financial advice.</span>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error getting recommendations:', error);
+                    recommendationsContent.innerHTML = `
+                        <div class="alert alert-danger">
+                            <h6 data-i18n="Error">Error</h6>
+                            <p data-i18n="Failed to get recommendations">Failed to get recommendations. Please try again later.</p>
+                        </div>
+                    `;
+                });
+            });
+        }
+        
+        // Helper function to show alerts
+        function showAlert(type, message) {
+            const alertsContainer = document.getElementById('alerts-container');
+            if (!alertsContainer) return;
+            
+            const alertElement = document.createElement('div');
+            alertElement.className = `alert alert-${type} alert-dismissible fade show`;
+            alertElement.role = 'alert';
+            alertElement.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            
+            alertsContainer.appendChild(alertElement);
+            
+            // Auto dismiss after 5 seconds
+            setTimeout(() => {
+                alertElement.classList.remove('show');
+                setTimeout(() => {
+                    alertsContainer.removeChild(alertElement);
+                }, 150);
+            }, 5000);
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - FinVice{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="mb-0" data-i18n="Welcome">Welcome</h1>
+            <h2 class="display-6 mb-3">{{ current_user.username }}</h2>
+            <p class="lead" data-i18n="Here's your financial overview and latest insights.">Here's your financial overview and latest insights.</p>
+        </div>
+    </div>
+    
+    <!-- Market Summary & Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0" data-i18n="Market Summary">Market Summary</h5>
+                    <a href="{{ url_for('market_data') }}" class="btn btn-sm btn-outline-primary" data-i18n="View More">View More</a>
+                </div>
+                <div class="card-body" id="market-summary">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary spinner-border-sm" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title mb-0" data-i18n="Quick Actions">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addAssetModal">
+                            <i class="bi bi-plus-circle"></i> <span data-i18n="Add Asset">Add Asset</span>
+                        </button>
+                        <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#chatModal">
+                            <i class="bi bi-chat"></i> <span data-i18n="Get Financial Advice">Get Financial Advice</span>
+                        </button>
+                        <a href="{{ url_for('market_data') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-graph-up"></i> <span data-i18n="Explore Market Data">Explore Market Data</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Portfolios Section -->
+    <div class="row mb-4">
+        <div class="col">
+            <h3 class="mb-3" data-i18n="Your Portfolios">Your Portfolios</h3>
+            
+            {% if portfolios %}
+            <div class="row">
+                {% for portfolio in portfolios %}
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ portfolio.name }}</h5>
+                            <p class="card-text">{{ portfolio.description or '' }}</p>
+                            
+                            <!-- Calculate portfolio stats -->
+                            {% set total_value = namespace(value=0) %}
+                            {% set total_cost = namespace(value=0) %}
+                            {% set asset_count = namespace(value=0) %}
+                            
+                            {% for asset in portfolio.assets %}
+                                {% set total_cost.value = total_cost.value + (asset.quantity * asset.purchase_price) %}
+                                {% set asset_count.value = asset_count.value + 1 %}
+                                <!-- We don't have real-time market value here, so use purchase price as placeholder -->
+                                {% set total_value.value = total_value.value + (asset.quantity * asset.purchase_price) %}
+                            {% endfor %}
+                            
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span data-i18n="Assets">Assets</span>
+                                    <span class="fw-bold">{{ asset_count.value }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <span data-i18n="Value">Value</span>
+                                    <span class="fw-bold">${{ "%.2f"|format(total_value.value) }}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="d-grid">
+                                <a href="{{ url_for('portfolio', portfolio_id=portfolio.id) }}" class="btn btn-primary">
+                                    <i class="bi bi-eye"></i> <span data-i18n="View Portfolio">View Portfolio</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> <span data-i18n="You don't have any portfolios yet.">You don't have any portfolios yet.</span>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#addPortfolioModal" data-i18n="Create one now">Create one now</a>.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Recent Activity & AI Insights -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0" data-i18n="Recent Activity">Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        {% set transactions = [] %}
+                        {% for portfolio in portfolios %}
+                            {% for transaction in portfolio.transactions %}
+                                {% set transactions = transactions + [transaction] %}
+                            {% endfor %}
+                        {% endfor %}
+                        
+                        {% if transactions %}
+                            {% for transaction in transactions[:5]|sort(attribute='timestamp', reverse=true) %}
+                            <div class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-0">
+                                            {% if transaction.transaction_type == 'buy' %}
+                                            <span class="badge bg-success" data-i18n="Buy">Buy</span>
+                                            {% else %}
+                                            <span class="badge bg-danger" data-i18n="Sell">Sell</span>
+                                            {% endif %}
+                                            {{ transaction.symbol }}
+                                        </h6>
+                                        <small class="text-muted">{{ transaction.timestamp.strftime('%Y-%m-%d %H:%M') }}</small>
+                                    </div>
+                                    <div class="text-end">
+                                        <div>{{ transaction.quantity }} × ${{ "%.2f"|format(transaction.price) }}</div>
+                                        <div class="fw-bold">${{ "%.2f"|format(transaction.total_amount) }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-4">
+                                <i class="bi bi-activity fs-1 text-muted"></i>
+                                <p class="mt-3 text-muted" data-i18n="No recent activity to display">No recent activity to display</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header">
+                    <h5 class="card-title mb-0" data-i18n="AI Insights">AI Insights</h5>
+                </div>
+                <div class="card-body">
+                    <div id="ai-insights">
+                        <div class="mb-4 p-3 border rounded bg-light">
+                            <h6><i class="bi bi-lightbulb"></i> <span data-i18n="Market Insight">Market Insight</span></h6>
+                            <p class="mb-0" data-i18n="Ask our AI assistant about current market trends and get personalized insights.">
+                                Ask our AI assistant about current market trends and get personalized insights.
+                            </p>
+                        </div>
+                        
+                        <div class="mb-4 p-3 border rounded bg-light">
+                            <h6><i class="bi bi-pie-chart"></i> <span data-i18n="Portfolio Recommendation">Portfolio Recommendation</span></h6>
+                            <p class="mb-0" data-i18n="Get personalized portfolio diversification recommendations based on your risk profile.">
+                                Get personalized portfolio diversification recommendations based on your risk profile.
+                            </p>
+                        </div>
+                        
+                        <div class="mb-0">
+                            <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#chatModal">
+                                <i class="bi bi-chat"></i> <span data-i18n="Ask Financial Assistant">Ask Financial Assistant</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Portfolio Modal -->
+<div class="modal fade" id="addPortfolioModal" tabindex="-1" aria-labelledby="addPortfolioModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addPortfolioModalLabel">
+                    <i class="bi bi-folder-plus"></i> <span data-i18n="Create New Portfolio">Create New Portfolio</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="add-portfolio-form" action="/api/portfolio/create" method="POST">
+                    <div class="mb-3">
+                        <label for="portfolio-name" class="form-label" data-i18n="Portfolio Name">Portfolio Name</label>
+                        <input type="text" class="form-control" id="portfolio-name" name="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="portfolio-description" class="form-label" data-i18n="Description (Optional)">Description (Optional)</label>
+                        <textarea class="form-control" id="portfolio-description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end">
+                        <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal" data-i18n="Cancel">Cancel</button>
+                        <button type="submit" class="btn btn-primary" data-i18n="Create Portfolio">Create Portfolio</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add event listener for portfolio form submission
+        const addPortfolioForm = document.getElementById('add-portfolio-form');
+        if (addPortfolioForm) {
+            addPortfolioForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const formData = new FormData(this);
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        showAlert('danger', data.error || 'Failed to create portfolio');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error creating portfolio:', error);
+                    showAlert('danger', 'Failed to create portfolio');
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}
